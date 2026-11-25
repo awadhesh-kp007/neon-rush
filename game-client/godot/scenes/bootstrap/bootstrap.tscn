@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3 uid="uid://bootstrap"]
+
+[ext_resource type="Script" path="res://scripts/core/game_manager.gd" id="1_gmgr"]
+
+[node name="Bootstrap" type="Node"]
+script = ExtResource("1_gmgr")
+
+[node name="LoadingLabel" type="Label" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -20.0
+offset_right = 120.0
+offset_bottom = 20.0
+text = "NEON RUSH"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 32

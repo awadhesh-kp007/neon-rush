@@ -1,0 +1,163 @@
+# NEON RUSH: CITY ESCAPE — Full Development Stack
+# First copy .env.example to .env and replace every placeholder with local-only values.
+# Usage: docker compose --env-file infrastructure/docker-compose/.env -f infrastructure/docker-compose/docker-compose.yml up -d
+
+services:
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: neonrush-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: neonrush
+      POSTGRES_USER: neonrush
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD for local PostgreSQL}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neonrush -d neonrush"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: neonrush-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:?Set REDIS_PASSWORD for local Redis}
+    ports:
+      - "6381:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:?Set REDIS_PASSWORD for local Redis}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.7.1
+    container_name: neonrush-zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+
+  kafka:
+    image: confluentinc/cp-kafka:7.7.1
+    container_name: neonrush-kafka
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: ../infrastructure/docker/backend.Dockerfile
+    container_name: neonrush-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_URL: jdbc:postgresql://postgres:5432/neonrush
+      DB_USERNAME: neonrush
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD for local PostgreSQL}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD for local Redis}
+      KAFKA_SERVERS: kafka:29092
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET to at least 32 random bytes}
+      METRICS_AUTH_USERNAME: ${METRICS_AUTH_USERNAME:?Set METRICS_AUTH_USERNAME for Prometheus scraping}
+      METRICS_AUTH_PASSWORD: ${METRICS_AUTH_PASSWORD:?Set METRICS_AUTH_PASSWORD for Prometheus scraping}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  player-portal:
+    build:
+      context: ../../frontend/player-portal
+      dockerfile: ../../infrastructure/docker/player-portal.Dockerfile
+    container_name: neonrush-player-portal
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080
+
+  admin-portal:
+    build:
+      context: ../../admin-portal/react-admin
+      dockerfile: ../../infrastructure/docker/admin-portal.Dockerfile
+    container_name: neonrush-admin-portal
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: neonrush-prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --config.expand-env
+    environment:
+      METRICS_AUTH_USERNAME: ${METRICS_AUTH_USERNAME:?Set METRICS_AUTH_USERNAME for Prometheus scraping}
+      METRICS_AUTH_PASSWORD: ${METRICS_AUTH_PASSWORD:?Set METRICS_AUTH_PASSWORD for Prometheus scraping}
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: neonrush-grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    ports:
+      - "3002:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD for local Grafana}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ../monitoring/grafana:/etc/grafana/provisioning
+
+volumes:
+  postgres_data:
+  redis_data:
+  zookeeper_data:
+  kafka_data:
+  prometheus_data:
+  grafana_data:

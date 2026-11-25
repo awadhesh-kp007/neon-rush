@@ -1,0 +1,16 @@
+{
+  "tool_name": "gut",
+  "include_subdirectories": true,
+  "directory": "res://tests/unit/",
+  "prefix": "test_",
+  "suffix": ".gd",
+  "script_prefix": "test_",
+  "script_suffix": "",
+  "log_level": 1,
+  "disable_strict_datatype_checks": false,
+  "ignore_pause": false,
+  "junit_xml_file": "",
+  "junit_xml_timestamp": false,
+  "compact_mode": false,
+  "run_on_load": false
+}

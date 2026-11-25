@@ -1,0 +1,141 @@
+spring:
+  application:
+    name: neon-rush-backend
+  profiles:
+    active: dev
+
+  # ── Database ──────────────────────────────────────────────────────────────
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/neonrush}
+    username: ${DB_USERNAME:neonrush}
+    password: ${DB_PASSWORD:replace-with-a-unique-local-postgres-password}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate   # Flyway owns the schema; Hibernate only validates
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+
+  # ── Flyway ───────────────────────────────────────────────────────────────
+  flyway:
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+
+  # ── Redis ─────────────────────────────────────────────────────────────────
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6381}
+      password: ${REDIS_PASSWORD:replace-with-a-unique-local-redis-password}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+
+  # ── Kafka ─────────────────────────────────────────────────────────────────
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.trusted.packages: "com.neonrush.*"
+    consumer:
+      group-id: neon-rush-backend
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.neonrush.*"
+
+  # ── Cache ─────────────────────────────────────────────────────────────────
+  cache:
+    type: redis
+    redis:
+      time-to-live: 300000  # 5 minutes default TTL
+
+# ── Server ───────────────────────────────────────────────────────────────────
+server:
+  port: ${SERVER_PORT:8080}
+  compression:
+    enabled: true
+    mime-types: application/json,text/plain
+  shutdown: graceful
+  error:
+    include-message: never  # Never expose internal error messages in production
+
+# ── Actuator / Observability ──────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 0.1  # 10% sampling in production; override in dev
+
+monitoring:
+  auth:
+    username: ${METRICS_AUTH_USERNAME:neonrush-monitoring}
+    password: ${METRICS_AUTH_PASSWORD:replace-with-a-unique-local-monitoring-password}
+
+# ── OpenAPI / Swagger ─────────────────────────────────────────────────────────
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
+  show-actuator: false
+
+# ── Application Config ────────────────────────────────────────────────────────
+neon-rush:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:replace-with-at-least-32-random-bytes-for-local-development}
+      access-token-expiry-seconds: ${JWT_ACCESS_TOKEN_EXPIRY_SECONDS:900}
+      refresh-token-expiry-seconds: ${JWT_REFRESH_TOKEN_EXPIRY_SECONDS:2592000}
+
+neonrush:
+
+  anti-cheat:
+    max-speed-m-per-s: 45.0
+    max-coins-per-second: 8.0
+    min-lane-switch-interval-ms: 200
+    duration-tolerance-percent: 5
+
+  google-play:
+    service-account-key-path: ${GOOGLE_PLAY_KEY_PATH:}
+    package-name: ${GOOGLE_PLAY_PACKAGE:com.neonrush.cityescape}
+
+  rate-limiting:
+    auth-requests-per-minute: 10
+    game-submit-per-session: 1
+    leaderboard-requests-per-minute: 60
+
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:3001}

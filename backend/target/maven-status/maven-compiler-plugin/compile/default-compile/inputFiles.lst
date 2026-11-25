@@ -1,0 +1,15 @@
+/Users/awadhesh/.gemini/antigravity/scratch/neon-rush/backend/src/main/java/com/neonrush/NeonRushApplication.java
+/Users/awadhesh/.gemini/antigravity/scratch/neon-rush/backend/src/main/java/com/neonrush/auth/controller/AuthController.java
+/Users/awadhesh/.gemini/antigravity/scratch/neon-rush/backend/src/main/java/com/neonrush/auth/domain/User.java
+/Users/awadhesh/.gemini/antigravity/scratch/neon-rush/backend/src/main/java/com/neonrush/auth/dto/AuthDtos.java
+/Users/awadhesh/.gemini/antigravity/scratch/neon-rush/backend/src/main/java/com/neonrush/auth/repository/UserRepository.java
+/Users/awadhesh/.gemini/antigravity/scratch/neon-rush/backend/src/main/java/com/neonrush/auth/security/JwtAuthFilter.java
+/Users/awadhesh/.gemini/antigravity/scratch/neon-rush/backend/src/main/java/com/neonrush/auth/security/JwtService.java
+/Users/awadhesh/.gemini/antigravity/scratch/neon-rush/backend/src/main/java/com/neonrush/auth/security/SecurityConfig.java
+/Users/awadhesh/.gemini/antigravity/scratch/neon-rush/backend/src/main/java/com/neonrush/auth/service/AuthService.java
+/Users/awadhesh/.gemini/antigravity/scratch/neon-rush/backend/src/main/java/com/neonrush/game/controller/GameController.java
+/Users/awadhesh/.gemini/antigravity/scratch/neon-rush/backend/src/main/java/com/neonrush/game/dto/GameDtos.java
+/Users/awadhesh/.gemini/antigravity/scratch/neon-rush/backend/src/main/java/com/neonrush/game/service/ScoreValidationService.java
+/Users/awadhesh/.gemini/antigravity/scratch/neon-rush/backend/src/main/java/com/neonrush/shared/exception/GlobalExceptionHandler.java
+/Users/awadhesh/.gemini/antigravity/scratch/neon-rush/backend/src/main/java/com/neonrush/shared/exception/NeonRushException.java
+/Users/awadhesh/.gemini/antigravity/scratch/neon-rush/backend/src/main/java/com/neonrush/shared/response/ApiResponse.java

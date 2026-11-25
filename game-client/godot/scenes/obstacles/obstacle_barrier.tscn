@@ -1,0 +1,23 @@
+[gd_scene load_steps=1 format=3 uid="uid://obstacle_barrier"]
+
+; ─────────────────────────────────────────────────────────────────
+; Obstacle — Barrier (low, player must jump or switch lane)
+; ─────────────────────────────────────────────────────────────────
+[node name="ObstacleBarrier" type="StaticBody3D"]
+
+; Add to obstacle group in _ready() via script
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = BoxShape3D
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = BoxMesh
+
+; Neon-orange material (placeholder)
+[node name="HitArea" type="Area3D" parent="."]
+collision_layer = 4
+
+[node name="AreaShape" type="CollisionShape3D" parent="HitArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = BoxShape3D

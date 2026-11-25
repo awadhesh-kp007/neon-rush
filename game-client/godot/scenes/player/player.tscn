@@ -1,0 +1,49 @@
+[gd_scene load_steps=4 format=3 uid="uid://player"]
+
+[ext_resource type="Script" path="res://scripts/player/runner_controller.gd" id="1_runner"]
+[ext_resource type="Script" path="res://scripts/player/player_animation.gd" id="2_panim"]
+[ext_resource type="Script" path="res://scripts/player/player_collision.gd" id="3_pcol"]
+
+; ─────────────────────────────────────────────────────────────────
+; Player — reusable CharacterBody3D scene.
+; The gameplay.tscn references this OR instantiates inline.
+; Character skin (MeshInstance3D) is swapped by CharacterManager.
+; ─────────────────────────────────────────────────────────────────
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_runner")
+
+; Standing capsule collider (height 1.8m, radius 0.35m)
+[node name="StandCollision" type="CollisionShape3D" parent="."]
+shape = CapsuleShape3D
+
+; Slide collider (shorter — toggled by RunnerController during slide)
+[node name="SlideCollision" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+shape = CapsuleShape3D
+disabled = true
+
+; ── Character Mesh (placeholder capsule — replaced per character) ──
+[node name="CharacterMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = CapsuleMesh
+
+; ── AnimationPlayer (populated with animations per character) ──
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+
+; ── PlayerAnimation bridge ──
+[node name="PlayerAnimation" type="Node" parent="."]
+script = ExtResource("2_panim")
+animation_player_path = NodePath("../AnimationPlayer")
+
+; ── Collision Detector (Area3D for coins / power-ups / obstacles) ──
+[node name="CollisionDetector" type="Area3D" parent="."]
+collision_layer = 2
+collision_mask = 4
+
+[node name="DetectorShape" type="CollisionShape3D" parent="CollisionDetector"]
+shape = CapsuleShape3D
+
+; ── PlayerCollision logic ──
+[node name="PlayerCollision" type="Node" parent="."]
+script = ExtResource("3_pcol")
+detector_path = NodePath("../CollisionDetector")

@@ -1,0 +1,75 @@
+name: CI — Backend (Java / Spring Boot)
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: [ 'backend/**' ]
+  pull_request:
+    branches: [ main, develop ]
+    paths: [ 'backend/**' ]
+
+jobs:
+  build-and-test:
+    name: Build & Test (Java 21)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: neonrush_test
+          POSTGRES_USER: neonrush
+          POSTGRES_PASSWORD: test_password
+        ports: [ "5432:5432" ]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports: [ "6379:6379" ]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Compile
+        working-directory: backend
+        run: mvn compile -B -q
+
+      - name: Run tests
+        working-directory: backend
+        env:
+          DB_URL: jdbc:postgresql://localhost:5432/neonrush_test
+          DB_USERNAME: neonrush
+          DB_PASSWORD: test_password
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          REDIS_PASSWORD: ""
+          JWT_SECRET: test_jwt_secret_at_least_32_chars_long
+        run: mvn test -B
+
+      - name: Package (skip tests — already ran)
+        working-directory: backend
+        run: mvn package -DskipTests -B -q
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: neon-rush-backend-jar
+          path: backend/target/*.jar
+          retention-days: 7

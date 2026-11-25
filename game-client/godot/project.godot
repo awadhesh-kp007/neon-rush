@@ -1,0 +1,81 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; but you can always edit it manually.
+
+[application]
+
+config/name="NEON RUSH: CITY ESCAPE"
+config/description="Escape the AXIOM Security Grid through the futuristic mega-city of Neo Lumis"
+config/version="0.1.0"
+run/main_scene="res://scenes/bootstrap/bootstrap.tscn"
+config/features=PackedStringArray("4.3", "Mobile")
+config/icon="res://icon.svg"
+
+[audio]
+
+buses/default_bus_layout=""
+
+[display]
+
+window/size/viewport_width=1080
+window/size/viewport_height=1920
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[filesystem]
+
+import/blender/enabled=false
+
+[input]
+
+swipe_left={
+"deadzone": 0.5,
+"events": []
+}
+swipe_right={
+"deadzone": 0.5,
+"events": []
+}
+swipe_up={
+"deadzone": 0.5,
+"events": []
+}
+swipe_down={
+"deadzone": 0.5,
+"events": []
+}
+pause={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":4194305,"physical_keycode":0,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)]
+}
+
+[physics]
+
+3d/default_gravity=9.8
+
+[rendering]
+
+renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
+environment/default_environment="res://resources/game-config/default_env.tres"
+
+[autoload]
+
+EventBus="*res://scripts/core/event_bus.gd"
+GameConstants="*res://scripts/core/game_constants.gd"
+GameManager="*res://scripts/core/game_manager.gd"
+ScoreManager="*res://scripts/gameplay/score_manager.gd"
+DifficultyManager="*res://scripts/gameplay/difficulty_manager.gd"
+PowerupManager="*res://scripts/powerups/powerup_manager.gd"
+CoinManager="*res://scripts/economy/coin_manager.gd"
+CharacterManager="*res://scripts/characters/character_manager.gd"
+MissionManager="*res://scripts/missions/mission_manager.gd"
+ApiClient="*res://scripts/network/api_client.gd"
+AuthManager="*res://scripts/network/auth_manager.gd"
+NetworkManager="*res://scripts/network/network_manager.gd"
+ReplayRecorder="*res://scripts/security/replay_recorder.gd"
+AnalyticsManager="*res://scripts/analytics/analytics_manager.gd"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gut/plugin.cfg")
